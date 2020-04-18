@@ -15,6 +15,7 @@ import 'package:selftrackingapp/page/screen/news_detail_screen.dart';
 import 'package:selftrackingapp/page/screen/pharamacy_list_screen.dart';
 import 'package:selftrackingapp/utils/tracker_colors.dart';
 import 'package:selftrackingapp/widgets/custom_text.dart';
+import 'package:selftrackingapp/widgets/live_notification_container.dart';
 import 'package:share/share.dart';
 
 import 'package:intl/intl.dart';
@@ -220,11 +221,11 @@ class _DashboardScreenState extends State<DashboardScreen>
       padding: const EdgeInsets.all(10.0),
       child: Card(
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.all(Radius.circular(8.0))),
+            borderRadius: BorderRadius.all(Radius.circular(20.0))),
         child: Container(
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.all(Radius.circular(8.0)),
+            borderRadius: BorderRadius.all(Radius.circular(20.0)),
             color: Colors.white,
           ),
           child: Column(
@@ -314,49 +315,6 @@ class _DashboardScreenState extends State<DashboardScreen>
     );
   }
 
-  Widget _createCountCard(String title, String figure, Color colorCode,
-      {width = 100}) {
-    return Card(
-      shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.all(Radius.circular(4.0))),
-      child: Container(
-        width: width,
-        padding: const EdgeInsets.symmetric(horizontal: 4.0),
-        decoration: BoxDecoration(
-            color: colorCode.withOpacity(0.2),
-            borderRadius: BorderRadius.all(Radius.circular(4.0))),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                title,
-                textAlign: TextAlign.start,
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16.0,
-                    color: colorCode),
-              ),
-            ),
-            Spacer(),
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8),
-              child: Text(
-                figure,
-                style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 23.0,
-                    color: colorCode),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildNewsScreen() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -385,14 +343,32 @@ class _DashboardScreenState extends State<DashboardScreen>
                   return Consumer<StoriesModel>(
                     builder: (context, model, child) {
                       List<NewsArticle> stories = model.articles;
-                      return ListView.builder(
-                          itemCount: stories.length + 1,
-                          itemBuilder: (BuildContext context, int index) {
-                            if (index == 0) {
-                              return _buildTopStats();
-                            } else
-                              return _createNewsArticle(stories[index - 1]);
-                          });
+                      return CustomScrollView(slivers: <Widget>[
+                        SliverToBoxAdapter(
+                          child: _buildTopStats(),
+                        ),
+                        SliverAppBar(
+                          backgroundColor: Colors.white,
+                          pinned: true,
+                          title: Container(
+                            margin: const EdgeInsets.only(left: 10.0),
+                            child: Text("Latest News",
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 25.0,
+                                  fontWeight: FontWeight.bold,
+                                )),
+                          ),
+                        ),
+                        SliverList(
+                          delegate: SliverChildBuilderDelegate(
+                            (context, index) {
+                              return _createNewsArticle(stories[index]);
+                            },
+                            childCount: stories.length,
+                          ),
+                        )
+                      ]);
                     },
                   );
                   break;
@@ -409,159 +385,205 @@ class _DashboardScreenState extends State<DashboardScreen>
   }
 
   Widget _buildTopStats() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: <Widget>[
-        // Padding(
-        //   padding: const EdgeInsets.only(left: 15, top: 20.0),
-        //   child: Text("ONGOING:",
-        //       textAlign: TextAlign.start,
-        //       style: TextStyle(
-        //           color: Colors.black,
-        //           fontWeight: FontWeight.bold,
-        //           fontSize: 15.0)),
-        // ),
-        // Padding(
-        //   padding: const EdgeInsets.only(left: 15),
-        //   child: Text("COVID-19 Statistics",
-        //       textAlign: TextAlign.start,
-        //       style: TextStyle(
-        //           color: Colors.black,
-        //           fontWeight: FontWeight.bold,
-        //           fontSize: 30.0)),
-        // ),
-        Container(
-          width: double.maxFinite,
-          height: MediaQuery.of(context).size.height /
-              (AppLocalizations.of(context).locale.languageCode == "ta"
-                  ? 3
-                  : 4),
-          child: Padding(
-            padding: const EdgeInsets.all(10.0),
+    return Container(
+      margin: const EdgeInsets.all(10.0),
+      child: Card(
+        color: TrackerColors.primaryColor,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.all(Radius.circular(20.0))),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Container(
+              width: MediaQuery.of(context).size.width,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: <Widget>[
+                  Padding(
+                    padding: const EdgeInsets.only(
+                      left: 15,
+                      top: 15.0,
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        LiveNotificationContainer(),
+                        SizedBox(
+                          width: 5.0,
+                        ),
+                        Text("ONGOING",
+                            textAlign: TextAlign.start,
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                                fontSize: 15.0)),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.only(left: 15, bottom: 0.0),
+                    child: Text("COVID-19 Statistics",
+                        textAlign: TextAlign.start,
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 30.0)),
+                  ),
+                ],
+              ),
+            ),
+            Center(
+              child: SizedBox(
+                width: 100.0,
+                child: Divider(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+            _buildInnerStats(),
+            Padding(
+              padding: const EdgeInsets.all(20).copyWith(top: 2, bottom: 4),
+              child: Container(
+                width: double.maxFinite,
+                child: Text(
+                  "${AppLocalizations.of(context).translate('dashboard_last_updated_text')} ${dateFormat.format(lastUpdated)}",
+                  textAlign: TextAlign.end,
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 10,
+                      color: Colors.white),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 10.0,
+            ),
+            Center(
+              child: RaisedButton(
+                color: Colors.white,
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(20.0))),
+                onPressed: () {},
+                child: Text(
+                  "See More",
+                  style: TextStyle(color: Colors.black),
+                ),
+              ),
+            ),
+            SizedBox(
+              height: 10.0,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInnerStats() {
+    double conHeight = 170;
+    if (AppLocalizations.of(context).locale == Locale("ta", "TA")) {
+      conHeight = 170;
+    } else if (AppLocalizations.of(context).locale == Locale("si", "LK")) {
+      conHeight = 150;
+    } else {
+      conHeight = 125;
+    }
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 10.0),
+      width: MediaQuery.of(context).size.width,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          Container(
+            height: conHeight,
             child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
                 Expanded(
-                  child: Column(
-                    children: <Widget>[
-                      Expanded(
-                        child: Container(
-                          width: double.maxFinite,
-                          height: MediaQuery.of(context).size.height / 2,
-                          child: _createCountCard(
-                            AppLocalizations.of(context)
-                                .translate("dashboard_confirmed_card_text"),
-                            "$confirmed",
-                            Color(0XFFc53030),
-                            width: MediaQuery.of(context).size.width / 4,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          width: double.maxFinite,
-                          height: MediaQuery.of(context).size.height / 2,
-                          child: _createCountCard(
-                              AppLocalizations.of(context)
-                                  .translate("dashboard_suspected_card_text"),
-                              "$suspected",
-                              Color(0XFFed8936),
-                              width: MediaQuery.of(context).size.width / 4),
-                        ),
-                      ),
-                    ],
+                  child: _createCountCard(
+                    AppLocalizations.of(context)
+                        .translate("dashboard_confirmed_card_text"),
+                    "$confirmed",
                   ),
                 ),
                 Expanded(
-                  child: Column(
-                    children: <Widget>[
-                      Expanded(
-                        child: Container(
-                          height: MediaQuery.of(context).size.height / 2,
-                          child: _createCountCard(
-                              AppLocalizations.of(context)
-                                  .translate("dashboard_recovered_card_text"),
-                              "$recovered",
-                              Color(0XFF3ea46d),
-                              width: MediaQuery.of(context).size.width),
-                        ),
-                      ),
-                      Expanded(
-                        child: Container(
-                          width: double.maxFinite,
-                          height: MediaQuery.of(context).size.height / 2,
-                          child: _createCountCard(
-                              AppLocalizations.of(context)
-                                  .translate("dashboard_deaths_card_text"),
-                              "$deaths",
-                              Color(0XFF303b4b),
-                              width: MediaQuery.of(context).size.width),
-                        ),
-                      ),
-                    ],
+                  child: _createCountCard(
+                    AppLocalizations.of(context)
+                        .translate("dashboard_suspected_card_text"),
+                    "$suspected",
                   ),
                 )
               ],
             ),
           ),
-        ),
-        Padding(
-          padding: const EdgeInsets.all(20).copyWith(top: 2, bottom: 2),
-          child: Container(
-            width: double.maxFinite,
-            child: Text(
-              "${AppLocalizations.of(context).translate('dashboard_last_updated_text')} ${dateFormat.format(lastUpdated)}",
-              textAlign: TextAlign.end,
-              style: TextStyle(fontWeight: FontWeight.w400, fontSize: 10),
+          Container(
+            height: conHeight,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: <Widget>[
+                Expanded(
+                    child: _createCountCard(
+                        AppLocalizations.of(context)
+                            .translate("dashboard_recovered_card_text"),
+                        "$recovered")),
+                Expanded(
+                  child: _createCountCard(
+                    AppLocalizations.of(context)
+                        .translate("dashboard_deaths_card_text"),
+                    "$deaths",
+                  ),
+                )
+              ],
             ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
-  Widget _buildStatScreen() {
-    return Padding(
-      padding: const EdgeInsets.only(top: 10.0),
+  Widget _createCountCard(String title, String figure) {
+    return Container(
+      constraints: BoxConstraints(maxHeight: 200.0),
+      decoration: BoxDecoration(
+        shape: BoxShape.rectangle,
+        borderRadius: BorderRadius.all(Radius.circular(20.0)),
+        color: Colors.black38,
+      ),
+      margin: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
+      padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 10.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Expanded(
-            child: GridView.count(
-                padding: const EdgeInsets.all(10.0),
-                crossAxisCount: MediaQuery.of(context).size.width > 600 ? 4 : 2,
-                mainAxisSpacing: 10.0,
-                childAspectRatio:
-                    AppLocalizations.of(context).locale == Locale("ta", "TA")
-                        ? 3 / 4
-                        : 3 / 3,
-                children: [
-                  _createCountCard(
-                      AppLocalizations.of(context)
-                          .translate("dashboard_confirmed_card_text"),
-                      "$confirmed",
-                      Color(0XFFc53030)),
-                  _createCountCard(
-                      AppLocalizations.of(context)
-                          .translate("dashboard_suspected_card_text"),
-                      "$suspected",
-                      Color(0XFFed8936)),
-                  _createCountCard(
-                      AppLocalizations.of(context)
-                          .translate("dashboard_recovered_card_text"),
-                      "$recovered",
-                      Color(0XFF3ea46d)),
-                  _createCountCard(
-                      AppLocalizations.of(context)
-                          .translate("dashboard_deaths_card_text"),
-                      "$deaths",
-                      Color(0XFF303b4b)),
-                ]),
+          Text(
+            figure,
+            textAlign: TextAlign.start,
+            style: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 30.0,
+                color: Colors.white),
           ),
           Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: const EdgeInsets.only(top: 2),
             child: Text(
-              "${AppLocalizations.of(context).translate('dashboard_last_updated_text')} ${dateFormat.format(lastUpdated)}",
-              style: TextStyle(fontWeight: FontWeight.w400),
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize:
+                      AppLocalizations.of(context).locale == Locale("ta", "TA")
+                          ? 15
+                          : 20,
+                  color: Colors.white),
             ),
           ),
         ],
